@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Verification</title>
+    <!-- Add Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul>
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
+    <h1>Verification</h1>
+    <form method="post" enctype="multipart/form-data">
+        <label>Username:</label>
+        <input type="text" name="username" required><br>
+
+        <label>Verification Photo:</label>
+        <input type="file" name="verification_photo" accept="image/*" required><br>
+
+        <input type="submit" value="Verify">
+    </form>
+</body>
+</html>
