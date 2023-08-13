@@ -1,98 +1,94 @@
-# Information Retrieval System using Flask and PHPMyAdmin
 
-This is a simple information retrieval system that allows an admin to register new members by collecting their information, including a photo, and stores it in a MySQL database. The system also enables the admin to verify a user's identity by matching their provided photo with the stored photo in the database. The web application is built using Flask as the backend framework and PHPMyAdmin as the MySQL database client.
 
-create a virtual environment both on windows and mac 
-python -m venv env
-Activate the virtual environment on windows 
-env\Scripts\activate
-on mac: source env/bin/activate
+```markdown
+# Signature Verification System using Artificial Intelligence
 
+This is a simple signature verification system that utilizes artificial intelligence techniques to verify the authenticity of signatures. The system allows users to upload both a genuine signature and a potentially forged signature. The AI model then calculates the similarity between the two signatures and determines the genuineness of the provided signatures.
 
 ## Installation
 
-Follow the steps below to set up the information retrieval system on your local machine:
+Follow the steps below to set up the signature verification system on your local machine:
 
-### Step 1: Install Python and Flask
+### Step 1: Set Up Environment
 
-1. Make sure you have Python installed on your system. If not, download the latest version from the official website: https://www.python.org/downloads/
+1. Create a virtual environment on your system. Run the following commands in your terminal:
 
-2. Install Flask using pip (Python package manager). Open your terminal/command prompt and run the following command:
+   For Windows:
+   ```sh
+   python -m venv env
+   env\Scripts\activate
    ```
-   pip install Flask
+# Alternatively if you can download anaconda navigator and install the following packages
+# Steps:
+1. download anaconda navigator for your operating system
+2. create a virtual environment and select the python version you will like to work with
+3. download or clone this project and open it in vscode 
+4. launch your terminal and type the following commands:
+# Installing dependencies
+
+conda install -c conda-forge face_recognition done
+conda install pandas done
+conda install streamlit
+conda install -c conda-forge opencv done
+conda install -c conda-forge imageio
+conda install -c conda-forge scikit-image
+
+
+
+
+   For macOS and Linux:
+   ```sh
+   python -m venv env
+   source env/bin/activate
    ```
 
-### Step 2: Install MySQL and PHPMyAdmin
+### Step 2: Install Dependencies
 
-1. Install MySQL database on your machine. You can download the installer from the official website: https://dev.mysql.com/downloads/installer/
-
-2. During the installation, make sure to set a root password for MySQL.
-
-3. Install PHPMyAdmin to manage the MySQL database. You can download PHPMyAdmin from: https://www.phpmyadmin.net/downloads/
-
-4. Follow the PHPMyAdmin installation instructions for your web server (e.g., Apache or Nginx).
+1. Install required Python packages. In your terminal, run:
+   ```sh
+   pip install Flask imageio scikit-image
+   ```
 
 ### Step 3: Clone the Repository
 
 1. Clone this repository to your local machine using git or download the ZIP file and extract it.
-
-   ```
-   git clone https://github.com/yourusername/information-retrieval-system.git
-   cd information-retrieval-system
-   ```
-
-### Step 4: Create the MySQL Database and Table
-
-1. Open PHPMyAdmin in your web browser (usually accessible at http://localhost/phpmyadmin/).
-
-2. Log in using the root username and the password you set during MySQL installation.
-
-3. Create a new database named `information_retrieval_system`.
-
-4. In the newly created database, execute the following SQL query to create the `members` table:
-
-   ```sql
-   CREATE TABLE members (
-       id INT AUTO_INCREMENT PRIMARY KEY,
-       firstname VARCHAR(50),
-       lastname VARCHAR(50),
-       username VARCHAR(50) UNIQUE,
-       address VARCHAR(100),
-       gender VARCHAR(10),
-       photo LONGBLOB
-   );
+   ```sh
+   git clone https://github.com/yourusername/signature-verification-system.git
+   cd signature-verification-system
    ```
 
-### Step 5: Run the Application
+### Step 4: Run the Application
 
-1. Open a terminal/command prompt and navigate to the project folder where you cloned or extracted the repository.
+1. Open a terminal/command prompt and navigate to the project folder.
 
-2. Run the Flask application using the following command:
-
-   ```
+2. Run the Flask application:
+   ```sh
    python app.py
    ```
 
-3. The application should now be running. Open your web browser and go to http://localhost:5000 to access the home page.
+3. Access the application by opening your web browser and going to http://localhost:5000.
 
 ## Usage
 
-1. Home Page: The home page welcomes users to the information retrieval system.
+1. Home Page: The home page welcomes users to the signature verification system.
 
-2. Login Page for Admin: Navigate to http://localhost:5000/login to access the login page for the admin. The default admin credentials are hardcoded in the Flask app (username: admin, password: password).
+2. Signature Verification: Navigate to http://localhost:5000/verification to access the signature verification page. You can upload both the genuine signature and the potentially forged signature. The AI model will calculate the similarity between the signatures and display the level of genuineness.
 
-3. Register New Member: After logging in as an admin, you can go to http://localhost:5000/register to register a new member. Provide all the required information, including a photo, and submit the form. The member's details will be stored in the MySQL database.
+## AI Model
 
-4. Verification: To verify a user's identity, the admin can go to http://localhost:5000/verification. The admin will be prompted to provide the user's photo (either by live capture or by uploading a photo). The provided photo will be compared with the stored photo in the database, and if there's a match, the user's information will be displayed.
+The AI model used in this system is a simplified version for demonstration purposes. For a production environment, a more advanced machine learning model specialized in signature verification should be used.
 
 ## Packages Used
 
 The following Python packages are used in this project:
 
 - Flask: A lightweight web framework for Python to create web applications.
-- mysql-connector-python: A MySQL driver for Python to interact with the MySQL database.
-- mysqlclient: A MySQL client library for Python, required by Flask MySQL.
+- imageio: A library to read and write various image data formats.
+- scikit-image: A collection of algorithms for image processing.
 
-You can install these packages using pip as shown in Step 1 of the installation guide.
+You can install these packages using pip as shown in the installation steps.
 
-Please note that this is a basic implementation of an information retrieval system, and it may need additional security and feature enhancements for a production-ready application. Always ensure proper input validation, user authentication, and secure photo storage when developing real-world applications.
+Please note that this is a basic implementation of a signature verification system and should be enhanced for real-world applications, including robust AI models, data privacy considerations, and user experience improvements.
+```
+
+Please replace `"yourusername"` with your actual GitHub username when sharing or using the repository. This updated README reflects the theme of a signature verification system using artificial intelligence, and it guides users through the setup, usage, and important considerations of the system.

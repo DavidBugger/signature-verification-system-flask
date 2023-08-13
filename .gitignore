@@ -1,0 +1,42 @@
+# Compiled Python files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+env/
+venv/
+.vscode/
+
+# Editor-specific files
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.vscode/
+
+# Local development configuration
+*.env
+
+# Compiled output
+dist/
+build/
+*.egg-info/
+
+# Dependency directories
+node_modules/
+bower_components/
+
+# Logs and databases
+*.log
+*.sqlite3
+*.db
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Custom ignore patterns
+# file_to_ignore.txt
+# directory_to_ignore/
+
