@@ -89,6 +89,3 @@ The following Python packages are used in this project:
 You can install these packages using pip as shown in the installation steps.
 
 Please note that this is a basic implementation of a signature verification system and should be enhanced for real-world applications, including robust AI models, data privacy considerations, and user experience improvements.
-```
-
-Please replace `"yourusername"` with your actual GitHub username when sharing or using the repository. This updated README reflects the theme of a signature verification system using artificial intelligence, and it guides users through the setup, usage, and important considerations of the system.
