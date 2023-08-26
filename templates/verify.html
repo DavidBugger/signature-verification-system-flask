@@ -1,98 +1,82 @@
-{% extends 'base.html' %}
 
-{% block content %}
-<link rel="stylesheet" href="static/cssform2.css">
-    <div class="container">
-        <div class="row justify-content-center mt-5">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-body">
-                        <h4 class="card-title text-center">Verify Signature </h4>
-                        <form method="POST" action="/verification" enctype="multipart/form-data">
-                            <div class="form-group">
-                                <label for="genuine_signature">Genuine Signature:</label>
-                                <input type="file" class="form-control" id="genuine_signature" name="genuine_signature" accept=".png,.jpg,.jpeg" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="forged_signature">Forged Signature:</label>
-                                <input type="file" class="form-control" id="forged_signature" name="forged_signature" accept=".png,.jpg,.jpeg" required>
-                            </div>
-                            <br>
-                            <div class="text-center">
-                                <button type="submit" class="btn btn-success">Verify</button>
-                            </div>
-                        </form>
+
+
+    
+   {% extends 'base.html' %}
+
+   {% block content %}
+   <style>
+
+   @media (min-width: 1025px) {
+    .h-custom {
+    height: 120vh !important;
+    }
+    }
+</style>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Signature Verification</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+</head>
+<body>
+ 
+
+    <section class="h-100 h-custom">
+        <div class="container py-5 h-100">
+            <div class="row d-flex justify-content-center align-items-center h-100">
+                <div class="col-lg-8 col-xl-6">
+                    <div class="card rounded-3">
+                        <!-- <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-registration/img3.webp"
+                            class="w-100" style="border-top-left-radius: .3rem; border-top-right-radius: .3rem;"
+                            alt="Sample photo"> -->
+                        <div class="card-body p-4 p-md-5">
+                            <h3 class="mb-4 pb-2 pb-md-0 mb-md-5 px-md-2" colspan="5" style="text-align: center; font-weight: bold; letter-spacing: 0cqmax; color:green;">Signature Verification System</h3>
+                            <form class="px-md-2" id="signature-form" enctype="multipart/form-data" method="POST">
+                                <div class="form-outline mb-6">
+                                    <label for="signature">Upload Signature</label>
+                                        <input type="file" class="form-control-file" id="signature" name="signature">
+                                </div>
+                                <br>
+                                <button type="submit" class="btn btn-success btn-lg mb-1">Verify</button>
+                            </form>
+    
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </section>
 
-  
-  <!-- <div class="wrapper">
-    <form action="#">
-      <h2>Login</h2>
-        <div class="input-field">
-        <input type="text" required>
-        <label>Enter your email</label>
-      </div>
-      <div class="input-field">
-        <input type="password" required>
-        <label>Enter your password</label>
-      </div>
-      <div class="forget">
-        <label for="remember">
-          <input type="checkbox" id="remember">
-          <p>Remember me</p>
-        </label>
-        <a href="#">Forgot password?</a>
-      </div>
-      <button type="submit">Log In</button>
-      <div class="register">
-        <p>Don't have an account? <a href="#">Register</a></p>
-      </div>
-    </form>
-  </div> -->
+    <script>
+    $(document).ready(function() {
+        $('#signature-form').submit(function(e) {
+            e.preventDefault();
 
+            var formData = new FormData(this);
 
-    <!-- Add these script tags in your HTML template -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.17/dist/sweetalert2.all.min.js"></script>
-
-   <!-- Add this script tag in your HTML template -->
-   <script>
-    // Handle form submission with jQuery
-    $(document).on('submit', 'form', function(e) {
-      e.preventDefault();
-      $.ajax({
-        url: $(this).attr('action'),
-        type: $(this).attr('method'),
-        data: new FormData(this),
-        processData: false,
-        contentType: false,
-        success: function(response) {
-          // Display the success message using SweetAlert
-          Swal.fire({
-            icon: 'success',
-            title: 'Success',
-            text: response.message,
-            showConfirmButton: false,
-            timer: 3000
-          }).then(() => {
-            // Redirect to the details page after displaying the success message
-            window.location.href = '/dashboard';
-          });
-        },
-        error: function(xhr, status, error) {
-          // Display the error message using SweetAlert
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: xhr.responseText,
-            showConfirmButton: true
-          });
-        }
-      });
+            $.ajax({
+                type: 'POST',
+                url: '/predict',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    var resultMessage = response.result;
+                    if (response.prediction == 0) {
+                        resultMessage += ' (Genuine)';
+                    } else if (response.prediction == 1) {
+                        resultMessage += ' (Forged)';
+                    }
+                    Swal.fire('Prediction Result', resultMessage, 'info');
+                }
+            });
+        });
     });
-  </script>
+    </script>
+</body>
+</html>
+
 {% endblock %}

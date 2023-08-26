@@ -2,55 +2,33 @@ from flask import Flask, render_template, request, redirect, flash, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from skimage.metrics import structural_similarity as ssim
-import imageio
 import sqlite3
 import os
-import random
-import string
-from flask import jsonify
+from flask import Flask, render_template, request, jsonify
+import cv2
+import numpy as np
+import tensorflow as tf
+from tensorflow import keras
+from keras.applications import MobileNetV2
+# from keras.applications import preprocess_input
+
+
 
 app = Flask(__name__)
+# model = tf.keras.models.load_model('model/pretrained_signature_model.h5')
 app.secret_key = 'hello'  # Set your own secret key
-app.config['UPLOAD_FOLDER'] = 'static/photos'
-
 # Connect to the SQLite database
 conn = sqlite3.connect('users.db', check_same_thread=False)
 cursor = conn.cursor()
-
 # Create the users table if it doesn't exist
 cursor.execute('''
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT NOT NULL,
-        firstname TEXT NOT NULL,
-        lastname TEXT NOT NULL,
-        address TEXT NOT NULL,
-        photo TEXT NOT NULL,
-        gender TEXT NOT NULL,
-        criminal_offence TEXT NOT NULL,
-        status TEXT NOT NULL,
-        nationality TEXT NOT NULL,
         password TEXT NOT NULL
     )
 ''')
 
-cursor.execute('''
-    CREATE TABLE IF NOT EXISTS register_members (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT NOT NULL,
-        firstname TEXT NOT NULL,
-        lastname TEXT NOT NULL,
-        address TEXT NOT NULL,
-        photo TEXT NOT NULL,
-        gender TEXT NOT NULL,
-        criminal_offence TEXT NOT NULL,
-        status TEXT NOT NULL,
-        nationality TEXT NOT NULL,
-        password TEXT NOT NULL
-    )
-''')
-
-# Insert an initial admin user
 username = 'admin'
 password = 'admin'
 role = 'admin'
@@ -65,8 +43,6 @@ if not admin_user:
     cursor.execute("INSERT INTO register_members (username, firstname, lastname, address, photo, gender, criminal_offence, status, nationality, password) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                    (username, '', '', '', '', '', '', '', '', hashed_password))
     conn.commit()
-    
-    
 @app.route('/')
 def home():
     return render_template('index.html')
@@ -91,47 +67,65 @@ def login():
 
     return render_template('login.html')
 
-
-@app.route('/verification', methods=['GET', 'POST'])
-def verify_signature():
+ # Load your model here
+model = tf.keras.models.load_model('model\pretrained_signature_model_full.h5') 
+@app.route('/predict', methods=['GET', 'POST'])
+def predict():
     if request.method == 'POST':
-        genuine_signature = request.files['genuine_signature']
-        forged_signature = request.files['forged_signature']
-
-        similarity_percentage = simulate_signature_verification(genuine_signature, forged_signature)
-        
-        return jsonify({'similarity_percentage': similarity_percentage})
-    
+        uploaded_file = request.files['signature']
+        if uploaded_file.filename != '':
+            image = process_uploaded_image(uploaded_file)
+            prediction = predict_image(image)
+            result = "Genuine" if prediction == 0 else "Forged"
+            return jsonify({'prediction': prediction, 'result': result})
+        return jsonify({'prediction': -1, 'result': 'No file uploaded'})
     return render_template('verify.html')
 
-def simulate_signature_verification(genuine_signature, forged_signature):
-    genuine_image = imageio.imread(genuine_signature)
-    forged_image = imageio.imread(forged_signature)
+def process_uploaded_image(uploaded_file):
+    image = cv2.imdecode(np.fromstring(uploaded_file.read(), np.uint8), cv2.IMREAD_COLOR)
+    image = cv2.resize(image, (224, 224))
+    image = image / 255.0
+    return image
+
+def predict_image(image):
+    tensor = model.predict(np.expand_dims(image, axis=0))
+    distance = np.sum(np.square(tensor - tensor), axis=-1)
+    prediction = 0 if np.any(distance <= 0.85) else 1
+    return prediction
+
+
+
+
+
+
+
+# from keras.models import load_model
+
+# Load the model
+# model = tf.keras.models.load_model('model/encoder.h5')
+
+# def classify_images(face_list1, face_list2, threshold=0.85):
+#     tensor1 = model.predict(face_list1)
+#     tensor2 = model.predict(face_list2)
     
-    similarity = ssim(genuine_image, forged_image, multichannel=True)
-    similarity_percentage = similarity * 100
-    
-    return similarity_percentage
+#     distance = np.sum(np.square(tensor1 - tensor2), axis=-1)
+#     prediction = np.where(distance <= threshold, 0, 1)
+#     return prediction
 
-
-
-
-def count_total_members():
-    cursor.execute("SELECT COUNT(*) FROM register_members")
-    total_members = cursor.fetchone()[0]
-    return total_members
-
-def count_members_with_criminal_records():
-    cursor.execute("SELECT COUNT(*) FROM register_members WHERE criminal_offence = 'yes'")
-    members_with_criminal_records = cursor.fetchone()[0]
-    return members_with_criminal_records
-
-def count_nigerian_members():
-    cursor.execute("SELECT COUNT(*) FROM register_members WHERE nationality = 'Nigeria'")
-    nigerian_members = cursor.fetchone()[0]
-    return nigerian_members
-
-
+# @app.route('/', methods=['GET', 'POST'])
+# def index():
+#     if request.method == 'POST':
+#         uploaded_files = request.files.getlist("file")
+        
+#         if len(uploaded_files) == 2:
+#             images = [cv2.imdecode(np.fromstring(file.read(), np.uint8), cv2.IMREAD_COLOR) for file in uploaded_files]
+#             images = [cv2.resize(img, (256, 256)) for img in images]
+#             images = [keras.applications.preprocess_input(img) for img in images]
+#             distance = classify_images(np.expand_dims(images[0], axis=0), np.expand_dims(images[1], axis=0))
+            
+#             return jsonify({"distance": distance[0]})
+            
+#     return render_template('verify.html')
 
 
 @app.route('/logout')
@@ -140,88 +134,9 @@ def logout():
     flash('Logged out successfully!', 'success')
     return redirect('/')
 
-# Route for registering a new member
-@app.route('/register_member', methods=['GET', 'POST'])
-def register_member():
-    if request.method == 'POST':
-        # Get user details from the form
-        firstname = request.form['firstname']
-        lastname = request.form['lastname']
-        address = request.form['address']
-        photo = request.files['photo']
-        gender = request.form.get('gender')
-        criminal_offence = request.form.get('criminal_offence')
-        status = request.form.get('status')
-        # nationality = request.form['nationality']
-        # Get the selected nationality from the form
-        nationality = request.form.get('nationality')
-
-
-        # Save the uploaded photo file
-        photo_filename = secure_filename(photo.filename)
-        photo.save(os.path.join(app.config['UPLOAD_FOLDER'], photo_filename))
-
-        # Generate a random username (you can use any logic to generate a username)
-        username = firstname.lower() + lastname.lower() 
-
-        # Generate a random password (you can use any logic to generate a password)
-        password = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
-
-        # Hash the password before storing in the database
-        hashed_password = generate_password_hash(password)
-
-        # Insert user data into the database
-        cursor.execute("INSERT INTO register_members (username, firstname, lastname, address, photo, gender, criminal_offence, status, nationality, password) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                       (username, firstname, lastname, address, photo_filename, gender, criminal_offence, status, nationality, hashed_password))
-        conn.commit()
-         # Display success message with SweetAlerts
-        success_message = f'Registration successful! Username: {username}, Password: {password}'
-        # Display success message with username and password
-        flash(f'Registration successful! Username: {username}, Password: {password}', 'success')
-          # Use SweetAlerts to show the success message
-        return jsonify({'message': success_message})
-
-    return render_template('register_member.html')
-
-
-@app.route('/verify_member', methods=['GET','POST'])
-def verify_member():
-    if request.method == 'POST':
-        username = request.form['username']
-        # Fetch the member details from the database
-        cursor.execute("SELECT * FROM register_members WHERE username = ?", (username,))
-        member = cursor.fetchone()
-        if member:
-            # If the member exists, show the details in a modal
-            return jsonify({'status': 'success', 'member': member})
-        else:
-            # If member doesn't exist, show an error message
-            return jsonify({'status': 'error', 'message': 'Member not found'})
-    return render_template('verify.html')
-    
-
-
-# Route to display registered member details
-@app.route('/details')
-def display_details():
-    # Fetch all registered members from the database
-    cursor.execute("SELECT * FROM register_members")
-    members = cursor.fetchall()
-
-    return render_template('details.html', members=members)
-
 
 @app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
-    # Get the total number of registered members
-    total_members = count_total_members()
-
-    # Get the number of members with criminal records
-    members_with_criminal_records = count_members_with_criminal_records()
-
-    # Get the number of Nigerian members
-    nigerian_members = count_nigerian_members()
-
     if 'username' not in session or session['role'] != 'admin':
         flash('Unauthorized access!', 'error')
         return redirect('/')
@@ -237,7 +152,7 @@ def dashboard():
         else:
             flash('Member not found!', 'error')
 
-    return render_template('dashboard.html', total_members=total_members, members_with_criminal_records=members_with_criminal_records, nigerian_members=nigerian_members)
+    return render_template('dashboard.html')
 
 if __name__ == '__main__':
     app.run(debug=True)

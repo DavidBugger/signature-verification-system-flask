@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signature Verification System</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.18/dist/sweetalert2.all.min.js"></script>
+</head>
+<body>
+    <script>
+        // Show a welcome message using SweetAlert
+        Swal.fire({
+            title: 'Welcome to Signature Verification System',
+            icon: 'info',
+            text: 'Click OK to proceed',
+            confirmButtonText: 'OK'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Show the input form
+                $('#signatureForm').show();
+            }
+        });
+
+        // Function to handle signature prediction
+        function predict_signature() {
+            // Get the uploaded signature file
+            var signatureFile = $('#signatureFile')[0].files[0];
+
+            if (signatureFile) {
+                var formData = new FormData();
+                formData.append('signature_file', signatureFile);
+
+                // Make a POST request to your Flask app's prediction endpoint
+                $.ajax({
+                    url: '/predict',
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function(response) {
+                        // Show the prediction result using SweetAlert
+                        Swal.fire({
+                            title: 'Prediction Result',
+                            icon: 'info',
+                            text: response,
+                            confirmButtonText: 'OK'
+                        });
+                    }
+                });
+            } else {
+                Swal.fire({
+                    title: 'Error',
+                    icon: 'error',
+                    text: 'Please select a signature file.'
+                });
+            }
+        }
+    </script>
+
+    <div id="signatureForm" style="display: none;">
+        <h2>Upload Signature</h2>
+        <input type="file" id="signatureFile" accept=".jpg, .jpeg, .png" />
+        <button onclick="predict_signature()">Predict</button>
+    </div>
+</body>
+</html>

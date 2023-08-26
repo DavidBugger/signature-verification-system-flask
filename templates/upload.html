@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Signature Verification</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Signature Verification</h1>
+    <form action="/upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="signature" accept="image/*">
+        <input type="submit" value="Upload and Verify">
+    </form>
+
+    <div id="result" style="display: none;"></div>
+
+    <script>
+        $("form").submit(function(e) {
+            e.preventDefault();
+            var formData = new FormData(this);
+
+            $.ajax({
+                url: "/upload",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.message === "Verification successful") {
+                        $("#result").text("Signature verification successful!");
+                    } else {
+                        $("#result").text("Signature verification failed.");
+                    }
+                    $("#result").show();
+                },
+                error: function() {
+                    $("#result").text("An error occurred.");
+                    $("#result").show();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
